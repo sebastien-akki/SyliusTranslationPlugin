@@ -139,8 +139,6 @@
                     if (!this.filter.showTranslated && !this.filter.showUntranslated) return messages;
                     if (typeof this.fullMessageCatalogue[domain] === 'undefined') return;
                     Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
-                        if (this.filterIdValue.length > 0 && !id.toLowerCase().includes(this.filterIdValue.toLowerCase())) return;
-
                         let translatedMessage = null;
                         let customMessage = null;
                         if (this.messageCatalogues[this.selectedLocaleCode]) {
@@ -156,6 +154,15 @@
                                     translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocaleCode][domain][id];
                                 }
                             }
+                        }
+
+                        if (translatedMessage){
+                            if (this.filterIdValue.length > 0
+                                && !id.toLowerCase().includes(this.filterIdValue.toLowerCase())
+                                && !translatedMessage.toLowerCase().includes(this.filterIdValue.toLowerCase())
+                            ) return;
+                        } else {
+                            if (this.filterIdValue.length > 0 && (!id.toLowerCase().includes(this.filterIdValue.toLowerCase()))) return;
                         }
 
                         const isTranslatedMessage = typeof (translatedMessage) === 'string';
