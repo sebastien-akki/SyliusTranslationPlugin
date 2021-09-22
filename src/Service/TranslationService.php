@@ -55,24 +55,36 @@ class TranslationService
     /** @var FilesystemAdapter $cache */
     private $cache;
 
+    /** @var array $translatorPaths */
+    private $translatorPaths;
+
+    /** @var string $translatorDefaultPath */
+    private $translatorDefaultPath;
+
     /**
      * TranslationService constructor.
      * @param TranslatorInterface|DataCollectorTranslator $translator
      * @param RepositoryInterface $localeRepository
      * @param LocaleProviderInterface $localeProvider
      * @param string $kernelRootDir
+     * @param array $translatorPaths
+     * @param string $translatorDefaultPath
      */
     public function __construct(
         TranslatorInterface $translator,
         RepositoryInterface $localeRepository,
         LocaleProviderInterface $localeProvider,
-        string $kernelRootDir
+        string $kernelRootDir,
+        string $translatorPaths,
+        array $translatorDefaultPath
     )
     {
         $this->translator = $translator;
         $this->localeRepository = $localeRepository;
         $this->localeProvider = $localeProvider;
         $this->kernelRootDir = $kernelRootDir;
+        $this->translatorPaths = $translatorPaths;
+        $this->translatorDefaultPath = $translatorDefaultPath;
         $this->filesystem = new Filesystem();
         $this->finder = new Finder();
         $this->cache = new FilesystemAdapter(static::CACHE_POOL_TAG);
@@ -199,36 +211,12 @@ class TranslationService
         }
 
         $catalogue = new MessageCatalogue($localeCode);
-        $customMessagesPath = realpath($this->kernelRootDir . '/translations/');
-        if ($this->filesystem->exists($customMessagesPath)) {
-            $translationFiles = $this->finder->files()->name(sprintf('*.%s.*', $localeCode))->in($customMessagesPath);
-            /** @var SplFileInfo $translationFile */
-            foreach ($translationFiles as $translationFile) {
-                list($domain, $translationLocaleCode, $format) = explode('.', $translationFile->getFilename());
-                if (strtolower($localeCode) !== strtolower($translationLocaleCode)) {
-                    continue;
-                }
-                $loader = null;
-                switch (strtolower($format)) {
-                    case 'yml':
-                    case 'yaml':
-                        $loader = new YamlFileLoader();
-                        break;
-                    case 'xlf':
-                    case 'xliff':
-                        $loader = new XliffFileLoader();
-                }
-                if (null === $loader) {
-                    continue;
-                }
-                $domainCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
-                foreach ($domainCatalogue->all($domain) as $id => $translation) {
-                    if (!$catalogue->has($id, $domain) || $loader instanceof  XliffFileLoader) {
-                        $catalogue->set($id, $translation, $domain);
-                    }
-                }
-            }
+
+        foreach ($this->translatorPaths as $path){
+            $this->feedCatalogue(realpath($path), $localeCode, $catalogue);
         }
+
+        $this->feedCatalogue(realpath($this->translatorDefaultPath), $localeCode, $catalogue);
 
         return $catalogue;
     }
@@ -273,7 +261,7 @@ class TranslationService
     public function save(MessageCatalogue $messageCatalogue, string $format = 'xliff'): bool
     {
         try {
-            $customMessagesPath = realpath($this->kernelRootDir . '/translationsXliff/');
+            $customMessagesPath = realpath($this->translatorDefaultPath);
             $dumper = new XliffFileDumper();
             $writer = new TranslationWriter();
             $writer->addDumper($format, $dumper);
@@ -321,6 +309,45 @@ class TranslationService
             return true;
         } catch (Exception $exception) {
             throw new Exception(sprintf('Failed to remove locale code "%s"', $localeCode));
+        }
+    }
+
+
+    /**
+     * @param $customMessagesPath
+     * @param string $localeCode
+     * @param MessageCatalogue $catalogue
+     */
+    private function feedCatalogue($customMessagesPath, string $localeCode, MessageCatalogue $catalogue): void
+    {
+        if ($this->filesystem->exists($customMessagesPath)) {
+            $translationFiles = $this->finder->files()->name(sprintf('*.%s.*', $localeCode))->in($customMessagesPath);
+            /** @var SplFileInfo $translationFile */
+            foreach ($translationFiles as $translationFile) {
+                list($domain, $translationLocaleCode, $format) = explode('.', $translationFile->getFilename());
+                if (strtolower($localeCode) !== strtolower($translationLocaleCode)) {
+                    continue;
+                }
+                $loader = null;
+                switch (strtolower($format)) {
+                    case 'yml':
+                    case 'yaml':
+                        $loader = new YamlFileLoader();
+                        break;
+                    case 'xlf':
+                    case 'xliff':
+                        $loader = new XliffFileLoader();
+                }
+                if (null === $loader) {
+                    continue;
+                }
+                $domainCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
+                foreach ($domainCatalogue->all($domain) as $id => $translation) {
+                    if (!$catalogue->has($id, $domain) || $loader instanceof XliffFileLoader) {
+                        $catalogue->set($id, $translation, $domain);
+                    }
+                }
+            }
         }
     }
 }
