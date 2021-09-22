@@ -75,8 +75,8 @@ class TranslationService
         RepositoryInterface $localeRepository,
         LocaleProviderInterface $localeProvider,
         string $kernelRootDir,
-        string $translatorPaths,
-        array $translatorDefaultPath
+        array $translatorPaths,
+        string $translatorDefaultPath
     )
     {
         $this->translator = $translator;
