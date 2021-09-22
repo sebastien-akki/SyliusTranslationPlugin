@@ -14,6 +14,7 @@ use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\Dumper\XliffFileDumper;
@@ -61,6 +62,12 @@ class TranslationService
     /** @var string $translatorDefaultPath */
     private $translatorDefaultPath;
 
+    /** @var CacheClearerInterface $cacheClearer */
+    private $cacheClearer;
+
+    /** @var string $kernelTranslationsCacheDir */
+    private $kernelTranslationsCacheDir;
+
     /**
      * TranslationService constructor.
      * @param TranslatorInterface|DataCollectorTranslator $translator
@@ -69,6 +76,8 @@ class TranslationService
      * @param string $kernelRootDir
      * @param array $translatorPaths
      * @param string $translatorDefaultPath
+     * @param CacheClearerInterface $cacheClearer
+     * @param string $kernelTranslationsCacheDir
      */
     public function __construct(
         TranslatorInterface $translator,
@@ -76,7 +85,9 @@ class TranslationService
         LocaleProviderInterface $localeProvider,
         string $kernelRootDir,
         array $translatorPaths,
-        string $translatorDefaultPath
+        string $translatorDefaultPath,
+        CacheClearerInterface $cacheClearer,
+        string $kernelTranslationsCacheDir
     )
     {
         $this->translator = $translator;
@@ -85,6 +96,8 @@ class TranslationService
         $this->kernelRootDir = $kernelRootDir;
         $this->translatorPaths = $translatorPaths;
         $this->translatorDefaultPath = $translatorDefaultPath;
+        $this->cacheClearer = $cacheClearer;
+        $this->kernelTranslationsCacheDir = $kernelTranslationsCacheDir;
         $this->filesystem = new Filesystem();
         $this->finder = new Finder();
         $this->cache = new FilesystemAdapter(static::CACHE_POOL_TAG);
@@ -266,7 +279,7 @@ class TranslationService
             $writer = new TranslationWriter();
             $writer->addDumper($format, $dumper);
             $writer->write($messageCatalogue, $format, ['path' => $customMessagesPath]);
-            /** @todo warmup domain translation cache file */
+            $this->clearCache();
             return true;
         } catch (Exception $exception) {
             return false;
@@ -349,5 +362,10 @@ class TranslationService
                 }
             }
         }
+    }
+
+    private function clearCache()
+    {
+        $this->cacheClearer->clear($this->kernelTranslationsCacheDir);
     }
 }
