@@ -56,7 +56,7 @@
                 showTranslated: false,
                 showUntranslated: true,
                 showCustom: true,
-                domain: ''
+                domain: 'messages'
             };
         },
         computed: {

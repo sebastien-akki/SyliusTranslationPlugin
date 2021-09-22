@@ -162,6 +162,9 @@ export const store = new Vuex.Store({
             Vue.set(context.state[type][localeCode][domain], id, message);
         },
         setMessage: async (context, payload) => {
+            if (!payload.domain){
+                payload.domain = 'messages';
+            }
             return new Promise((resolve, reject) => {
                 axios.post('/admin/translation/setMessage', payload).then(response => {
                     if (response.data.status === 'success') {
