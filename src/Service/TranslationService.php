@@ -15,6 +15,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
+use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\Dumper\XliffFileDumper;
@@ -68,6 +69,9 @@ class TranslationService
     /** @var string $kernelTranslationsCacheDir */
     private $kernelTranslationsCacheDir;
 
+    /** @var CacheWarmerInterface $warmer */
+    private CacheWarmerInterface $warmer;
+
     /**
      * TranslationService constructor.
      * @param TranslatorInterface|DataCollectorTranslator $translator
@@ -78,6 +82,7 @@ class TranslationService
      * @param string $translatorDefaultPath
      * @param CacheClearerInterface $cacheClearer
      * @param string $kernelTranslationsCacheDir
+     * @param CacheWarmerInterface $warmer
      */
     public function __construct(
         TranslatorInterface $translator,
@@ -87,7 +92,8 @@ class TranslationService
         array $translatorPaths,
         string $translatorDefaultPath,
         CacheClearerInterface $cacheClearer,
-        string $kernelTranslationsCacheDir
+        string $kernelTranslationsCacheDir,
+        CacheWarmerInterface $warmer
     )
     {
         $this->translator = $translator;
@@ -98,6 +104,7 @@ class TranslationService
         $this->translatorDefaultPath = $translatorDefaultPath;
         $this->cacheClearer = $cacheClearer;
         $this->kernelTranslationsCacheDir = $kernelTranslationsCacheDir;
+        $this->warmer = $warmer;
         $this->filesystem = new Filesystem();
         $this->finder = new Finder();
         $this->cache = new FilesystemAdapter(static::CACHE_POOL_TAG);
@@ -367,5 +374,7 @@ class TranslationService
     private function clearCache()
     {
         $this->cacheClearer->clear($this->kernelTranslationsCacheDir);
+        $this->warmer->enableOnlyOptionalWarmers();
+        $this->warmer->warmUp($this->kernelTranslationsCacheDir);
     }
 }

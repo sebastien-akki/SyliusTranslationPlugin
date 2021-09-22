@@ -20,6 +20,7 @@ services:
       $translatorDefaultPath: '%translation_default_path%'
       $cacheClearer: '@cache_clearer'
       $kernelTranslationsCacheDir: '%kernel.cache_dir%/translations'
+      $warmer: '@cache_warmer'
 
   Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_translation_service'
 
