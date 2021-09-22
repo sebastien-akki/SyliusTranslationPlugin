@@ -223,7 +223,7 @@ class TranslationService
                 }
                 $domainCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
                 foreach ($domainCatalogue->all($domain) as $id => $translation) {
-                    if (!$catalogue->has($id, $domain)) {
+                    if (!$catalogue->has($id, $domain) || $loader instanceof  XliffFileLoader) {
                         $catalogue->set($id, $translation, $domain);
                     }
                 }
@@ -273,7 +273,7 @@ class TranslationService
     public function save(MessageCatalogue $messageCatalogue, string $format = 'xliff'): bool
     {
         try {
-            $customMessagesPath = realpath($this->kernelRootDir . '/translations/');
+            $customMessagesPath = realpath($this->kernelRootDir . '/translationsXliff/');
             $dumper = new XliffFileDumper();
             $writer = new TranslationWriter();
             $writer->addDumper($format, $dumper);
