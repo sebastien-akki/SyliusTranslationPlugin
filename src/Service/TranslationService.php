@@ -374,7 +374,6 @@ class TranslationService
     private function clearCache()
     {
         $this->cacheClearer->clear($this->kernelTranslationsCacheDir);
-        $this->warmer->enableOnlyOptionalWarmers();
         $this->warmer->warmUp($this->kernelTranslationsCacheDir);
     }
 }
