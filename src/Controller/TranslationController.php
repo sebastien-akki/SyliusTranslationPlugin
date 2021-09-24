@@ -60,7 +60,7 @@ final class TranslationController extends AbstractController
     public function fetchFullMessageCatalogue(Request $request): JsonResponse
     {
         try {
-            $full = $this->translationService->getFullMessageCatalogue();
+            $full = $this->translationService->getFullMessageCatalogue(true);
             return $this->json([
                 'status' => 'success',
                 'full' => $full->all()
