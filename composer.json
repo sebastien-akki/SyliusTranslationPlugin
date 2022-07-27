@@ -8,8 +8,8 @@
   "description": "Translation plugin for Sylius.",
   "license": "MIT",
   "require": {
-    "php": "^7.2",
-    "sylius/sylius": "~1.5.0",
+    "php": "^7.2 || ^7.3 || ^8.0",
+    "sylius/sylius": "~1.8.0 || ~1.9.0 || ~1.10.0 || ~1.11.0",
     "ext-json": "*"
   },
   "require-dev": {
