@@ -155,7 +155,7 @@ class TranslationService
      */
     public function getFullMessageCatalogue(bool $forceRevalidate = false): MessageCatalogue
     {
-        $locales = Locales::getNames();
+        $locales = Locales::getLocales();
 
         if ($forceRevalidate) {
             $this->cache->delete(static::FULL_MESSAGE_CATALOGUE_CACHE_KEY);
@@ -206,7 +206,7 @@ class TranslationService
      */
     public function getTranslatedMessageCatalogue(string $localeCode): MessageCatalogue
     {
-        $locales = Locales::getNames();
+        $locales = Locales::getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Invalid locale code "%s"', $localeCode));
         }
@@ -225,7 +225,7 @@ class TranslationService
      */
     public function getCustomMessageCatalogue(string $localeCode): MessageCatalogue
     {
-        $locales = Locales::getNames();
+        $locales = Locales::getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Invalid locale code "%s"', $localeCode));
         }
@@ -305,7 +305,7 @@ class TranslationService
         if ($locale instanceof Locale) {
             throw new Exception(sprintf('Locale "%s" already exists', $locale->getName()));
         }
-        $locales = Locales::getNames();
+        $locales = Locales::getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Locale code "%s" not found', $localeCode));
         }
