@@ -26,6 +26,8 @@ services:
 
   # controller
   Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController:
+    autowire: true
+    autoconfigure: true
     arguments:
       $translationService: '@yaroslavche_sylius_translation_plugin_translation_service'
     tags: ['controller.service_arguments']
