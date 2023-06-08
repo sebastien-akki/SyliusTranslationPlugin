@@ -17,7 +17,6 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Component\Intl\Intl;
-use Symfony\Component\Intl\Locales;
 use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\Dumper\XliffFileDumper;
 use Symfony\Component\Translation\Loader\XliffFileLoader;
@@ -27,7 +26,7 @@ use Symfony\Component\Translation\Writer\TranslationWriter;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-use function \sprintf;
+use function \Safe\sprintf;
 
 class TranslationService
 {
@@ -124,7 +123,7 @@ class TranslationService
      */
     public function getSupportedLocales(): array
     {
-        return Locales::getNames($this->getDefaultLocaleCode());
+        return Intl::getLocaleBundle()->getLocaleNames($this->getDefaultLocaleCode());
     }
 
     /**
@@ -156,7 +155,7 @@ class TranslationService
      */
     public function getFullMessageCatalogue(bool $forceRevalidate = false): MessageCatalogue
     {
-        $locales = Locales::getLocales();
+        $locales = Intl::getLocaleBundle()->getLocales();
 
         if ($forceRevalidate) {
             $this->cache->delete(static::FULL_MESSAGE_CATALOGUE_CACHE_KEY);
@@ -207,7 +206,7 @@ class TranslationService
      */
     public function getTranslatedMessageCatalogue(string $localeCode): MessageCatalogue
     {
-        $locales = Locales::getLocales();
+        $locales = Intl::getLocaleBundle()->getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Invalid locale code "%s"', $localeCode));
         }
@@ -226,7 +225,7 @@ class TranslationService
      */
     public function getCustomMessageCatalogue(string $localeCode): MessageCatalogue
     {
-        $locales = Locales::getLocales();
+        $locales = Intl::getLocaleBundle()->getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Invalid locale code "%s"', $localeCode));
         }
@@ -306,7 +305,7 @@ class TranslationService
         if ($locale instanceof Locale) {
             throw new Exception(sprintf('Locale "%s" already exists', $locale->getName()));
         }
-        $locales = Locales::getLocales();
+        $locales = Intl::getLocaleBundle()->getLocales();
         if (!in_array($localeCode, $locales)) {
             throw new Exception(sprintf('Locale code "%s" not found', $localeCode));
         }
