@@ -27,7 +27,7 @@ use Symfony\Component\Translation\Writer\TranslationWriter;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-use function \Safe\sprintf;
+use function \sprintf;
 
 class TranslationService
 {
